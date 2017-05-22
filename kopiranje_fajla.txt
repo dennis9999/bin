@@ -1,0 +1,135 @@
+import java.io.*;
+import java.nio.channels.FileChannel;
+public class Zadatak4_2 {
+
+	public static final String INPUT_FILE = "C:\\Users\\Z003T6CY\\Desktop\\fajl\\1.txt";
+	  
+	  public static final String COPY_FILE_TO = "C:\\Users\\Z003T6CY\\Desktop\\fajl\\2.txt";
+	  
+	  public static void main(String... aArgs) throws IOException{
+	    File izvorni = new File(INPUT_FILE);
+	    File odredisni = new File(COPY_FILE_TO);
+	    File[] fajlovi = new File[1];
+		fajlovi[0] = new File(INPUT_FILE);
+		File sp = new File(COPY_FILE_TO);
+		spFajl(fajlovi, sp);
+	    Zadatak4_2 test = new Zadatak4_2();
+	    test.kopiranjeKana(izvorni, odredisni, false);
+	    log("Odraðeno!");
+	  }
+
+	  public static void spFajl(File[] fajl, File spFile) {
+		  
+			FileWriter fstream = null;
+			BufferedWriter out = null;
+			try {
+				fstream = new FileWriter(spFile, true);
+				 out = new BufferedWriter(fstream);
+			} catch (IOException e1) {
+				 //System.out.println(e1.getMessage() + "HELP UPUTA: upisati naziv fajla koji se traži!!!!");
+				e1.printStackTrace();
+			}
+	 
+			for (File f : fajl) {
+				System.out.println("Stapanje: " + f.getName());
+				FileInputStream fis;
+				try {
+					fis = new FileInputStream(f);
+					BufferedReader in = new BufferedReader(new InputStreamReader(fis));
+	 
+					String aLine;
+					while ((aLine = in.readLine()) != null) {
+						out.write(aLine);
+						out.newLine();
+					}
+	 
+					in.close();
+				} catch (IOException e) {
+					System.out.println(e.getMessage() + "HELP UPUTA: upisati naziv fajla koji se traži!!!!");
+					e.printStackTrace();
+				}
+			}
+	 
+			try {
+				out.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+	  private void kopiranjeKana(File izfajl, File odfajl, boolean dodavanje) {
+	    log("Kopiranje fajla uspješno!!!");
+	    ensureTargetDirectoryExists(odfajl.getParentFile());
+	    FileChannel inChannel = null;
+	    FileChannel outChannel = null;
+	    FileInputStream inStream = null;
+	    FileOutputStream outStream = null;
+	    try{
+	      try {
+	        inStream = new FileInputStream(izfajl);
+	        inChannel = inStream.getChannel();
+	        outStream = new  FileOutputStream(odfajl, dodavanje);        
+	        outChannel = outStream.getChannel();
+	        long bytesTransferred = 0;
+	        while(bytesTransferred < inChannel.size()){
+	          bytesTransferred += inChannel.transferTo(0, inChannel.size(), outChannel);
+	        }
+	      }
+	      finally {
+	        if (inChannel != null) inChannel.close();
+	        if (outChannel != null) outChannel.close();
+	        if (inStream != null) inStream.close();
+	        if (outStream != null) outStream.close();
+	      }
+	    }
+	    catch (FileNotFoundException ex){
+	      log("HELP UPUTA: upisati naziv fajla koji se traži!!!! " + ex);
+	    }
+	    catch (IOException ex){
+	      log(ex);
+	    }
+	  }
+	  
+	  private void kopiranjePro(File izfajl, File odfajl, boolean dodavanje) {
+	    log("Kopiranje datoteka s streamovima.");
+	    ensureTargetDirectoryExists(odfajl.getParentFile());
+	    InputStream inStream = null;
+	    OutputStream outStream = null;
+	    try{
+	      try {
+	        byte[] bucket = new byte[32*1024];
+	        inStream = new BufferedInputStream(new FileInputStream(izfajl));
+	        outStream = new BufferedOutputStream(new FileOutputStream(odfajl, dodavanje));
+	        int bytesRead = 0;
+	        while(bytesRead != -1){
+	          bytesRead = inStream.read(bucket); //-1, 0, or more
+	          if(bytesRead > 0){
+	            outStream.write(bucket, 0, bytesRead);
+	          }
+	        }
+	      }
+	      finally {
+	        if (inStream != null) inStream.close();
+	        if (outStream != null) outStream.close();
+	      }
+	    }
+	    catch (FileNotFoundException ex){
+	      log("Fajl nije pronaðen: " + ex);
+	    }
+	    catch (IOException ex){
+	      log(ex);
+	    }
+	  }
+	  
+	  private void ensureTargetDirectoryExists(File aTargetDir){
+	    if(!aTargetDir.exists()){
+	      aTargetDir.mkdirs();
+	    }
+	  }
+	  
+	  private static void log(Object aThing){
+	    System.out.println(String.valueOf(aThing));
+	  }
+
+}
